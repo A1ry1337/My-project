@@ -1,0 +1,19 @@
+# Игнорировать файлы и каталоги Unity
+[Ll]ibrary/
+[Ll]ogs/
+[Tt]emp/
+Obj/
+Build/
+Builds/
+.idea/
+.vscode/
+
+# Игнорировать файлы с расширением .user и .userprefs
+*.user
+*.userprefs
+
+# Игнорировать файлы сборки
+*.apk
+*.ipa
+*.unitypackage
+*.pdb
