@@ -1,9 +1,26 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class TasksSceneScript : MonoBehaviour
 {
+    // Объекты Image для отображения выбранных инструментов
+    public Image selectedInstrument1;
+    public Image selectedInstrument2;
+    public Image selectedInstrument3;
+
+    // Список спрайтов для инструментов
+    public Sprite knifeSprite;
+    public Sprite bucketSprite;
+    public Sprite boxSprite;
+    public Sprite shovelSprite;
+    public Sprite bagSprite;
+    public Sprite wheelbarrowSprite;
+
+    // Словарь для связи названий инструментов со спрайтами
+    private Dictionary<string, Sprite> toolSprites;
+
     // Список кнопок
     public Button taskButton1;
     public Button taskButton2;
@@ -11,21 +28,38 @@ public class TasksSceneScript : MonoBehaviour
     public Button taskButton4;
     public Button taskButton5;
 
-    // Ссылки на изображения задач
+    // Ссылки на selected изображения
     public GameObject selectedTask1;
     public GameObject selectedTask2;
     public GameObject selectedTask3;
     public GameObject selectedTask4;
     public GameObject selectedTask5;
 
-    // Персонаж, для которого выбираются задачи (например, Hero)
+    // Персонаж, для которого выбираются задачи
     public string characterName = "Hero";
     
     private string currentTask;
 
     void Start()
     {
-        // Подключаем обработчики нажатий ко всем кнопкам
+        toolSprites = new Dictionary<string, Sprite>
+        {
+            { "Knife", knifeSprite },
+            { "Bucket", bucketSprite },
+            { "Box", boxSprite },
+            { "Shovel", shovelSprite },
+            { "Bag", bagSprite },
+            { "Wheelbarrow", wheelbarrowSprite }
+        };
+        // Скрываем все изображения инструментов на старте
+        selectedInstrument1.gameObject.SetActive(false);
+        selectedInstrument2.gameObject.SetActive(false);
+        selectedInstrument3.gameObject.SetActive(false);
+
+        // Обновляем отображение инструментов
+        DisplaySelectedInstruments();
+
+        // Обработчики нажатий ко всем кнопкам
         taskButton1.onClick.AddListener(() => OnTaskButtonClicked(1));
         taskButton2.onClick.AddListener(() => OnTaskButtonClicked(2));
         taskButton3.onClick.AddListener(() => OnTaskButtonClicked(3));
@@ -68,8 +102,51 @@ public class TasksSceneScript : MonoBehaviour
                 break;
         }
 
-        // Логирование текущего состояния выбора
         Debug.Log("Выбрана задача: " + currentTask);
+    }
+
+    private void DisplaySelectedInstruments()
+    {
+        // Проверяем выбранные инструменты для персонажа Hero
+        if (!MainSceneScript.selectedTools.ContainsKey("Hero"))
+        {
+            Debug.Log("У персонажа Hero нет выбранных инструментов.");
+            return;
+        }
+
+        List<string> heroTools = MainSceneScript.selectedTools["Hero"];
+        Debug.Log("Отображаем выбранные инструменты для Hero: " + string.Join(", ", heroTools));
+
+        // Перебираем выбранные инструменты и отображаем их
+        for (int i = 0; i < heroTools.Count && i < 3; i++)
+        {
+            string toolName = heroTools[i];
+            Sprite toolSprite;
+
+            if (toolSprites.TryGetValue(toolName, out toolSprite))
+            {
+                // Устанавливаем изображение и показываем соответствующий объект
+                switch (i)
+                {
+                    case 0:
+                        selectedInstrument1.sprite = toolSprite;
+                        selectedInstrument1.gameObject.SetActive(true);
+                        break;
+                    case 1:
+                        selectedInstrument2.sprite = toolSprite;
+                        selectedInstrument2.gameObject.SetActive(true);
+                        break;
+                    case 2:
+                        selectedInstrument3.sprite = toolSprite;
+                        selectedInstrument3.gameObject.SetActive(true);
+                        break;
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Спрайт для инструмента {toolName} не найден!");
+            }
+        }
     }
 
     // Метод для добавления задачи в selectedTasks (MainSceneScript)
@@ -91,7 +168,7 @@ public class TasksSceneScript : MonoBehaviour
     public void BackClick() {
         if (!string.IsNullOrEmpty(currentTask))
             AddTaskToCharacter(currentTask);
-
+        
         SceneManager.LoadScene("MainScene");
     }
 }

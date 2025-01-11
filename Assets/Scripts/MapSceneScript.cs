@@ -70,7 +70,8 @@ public class MapSceneScript : MonoBehaviour
 
     public void BackClick() {
         if (!string.IsNullOrEmpty(currentLocation)) {
-            MainSceneScript.currentLocation = currentLocation; // Обновляем локацию
+            MainSceneScript.currentLocation = currentLocation;
+            Debug.Log($"Текущая локация обновлена: {currentLocation}");
         }
         SceneManager.LoadScene("MainScene");
     }
