@@ -37,24 +37,25 @@ public class TasksSceneScript : MonoBehaviour
 
     // Персонаж, для которого выбираются задачи
     public string characterName = "Hero";
-    
+
     private string currentTask;
+
+    private List<string> temporarySelectedTools = new List<string>();
 
     void Start()
     {
         toolSprites = new Dictionary<string, Sprite>
-        {
-            { "Knife", knifeSprite },
-            { "Bucket", bucketSprite },
-            { "Box", boxSprite },
-            { "Shovel", shovelSprite },
-            { "Bag", bagSprite },
-            { "Wheelbarrow", wheelbarrowSprite }
-        };
+    {
+        { "Knife", knifeSprite },
+        { "Bucket", bucketSprite },
+        { "Box", boxSprite },
+        { "Shovel", shovelSprite },
+        { "Bag", bagSprite },
+        { "Wheelbarrow", wheelbarrowSprite }
+    };
+
         // Скрываем все изображения инструментов на старте
-        selectedInstrument1.gameObject.SetActive(false);
-        selectedInstrument2.gameObject.SetActive(false);
-        selectedInstrument3.gameObject.SetActive(false);
+        ClearSelectedInstruments(); // Очистка инструментов при старте
 
         // Обновляем отображение инструментов
         DisplaySelectedInstruments();
@@ -66,6 +67,7 @@ public class TasksSceneScript : MonoBehaviour
         taskButton4.onClick.AddListener(() => OnTaskButtonClicked(4));
         taskButton5.onClick.AddListener(() => OnTaskButtonClicked(5));
     }
+
 
     // Метод для управления выбором задачи
     public void OnTaskButtonClicked(int taskNumber)
@@ -107,20 +109,20 @@ public class TasksSceneScript : MonoBehaviour
 
     private void DisplaySelectedInstruments()
     {
-        // Проверяем выбранные инструменты для персонажа Hero
-        if (!MainSceneScript.selectedTools.ContainsKey("Hero"))
+        // Получаем выбранные инструменты из MainScene только при первом запуске
+        if (temporarySelectedTools.Count == 0 && MainSceneScript.selectedTools.ContainsKey("Hero"))
         {
-            Debug.Log("У персонажа Hero нет выбранных инструментов.");
-            return;
+            List<string> heroTools = MainSceneScript.selectedTools["Hero"];
+            Debug.Log("Отображаем выбранные инструменты для Hero: " + string.Join(", ", heroTools));
+
+            // Сохраняем инструменты в временном хранилище
+            temporarySelectedTools = new List<string>(heroTools);
         }
 
-        List<string> heroTools = MainSceneScript.selectedTools["Hero"];
-        Debug.Log("Отображаем выбранные инструменты для Hero: " + string.Join(", ", heroTools));
-
         // Перебираем выбранные инструменты и отображаем их
-        for (int i = 0; i < heroTools.Count && i < 3; i++)
+        for (int i = 0; i < temporarySelectedTools.Count && i < 3; i++)
         {
-            string toolName = heroTools[i];
+            string toolName = temporarySelectedTools[i];
             Sprite toolSprite;
 
             if (toolSprites.TryGetValue(toolName, out toolSprite))
@@ -149,6 +151,23 @@ public class TasksSceneScript : MonoBehaviour
         }
     }
 
+    private void ClearSelectedInstruments()
+    {
+        // Скрываем все изображения инструментов
+        selectedInstrument1.gameObject.SetActive(false);
+        selectedInstrument2.gameObject.SetActive(false);
+        selectedInstrument3.gameObject.SetActive(false);
+
+        // Очистим спрайты
+        selectedInstrument1.sprite = null;
+        selectedInstrument2.sprite = null;
+        selectedInstrument3.sprite = null;
+
+        // Очистим временные инструменты
+        temporarySelectedTools.Clear();
+    }
+
+
     // Метод для добавления задачи в selectedTasks (MainSceneScript)
     void AddTaskToCharacter(string task)
     {
@@ -161,14 +180,28 @@ public class TasksSceneScript : MonoBehaviour
         }
     }
 
-    public void OpenInstrument() {
+    public void OpenInstrument()
+    {
         SceneManager.LoadScene("InstrumentsScene");
     }
 
-    public void BackClick() {
+    public void BackClick()
+    {
         if (!string.IsNullOrEmpty(currentTask))
             AddTaskToCharacter(currentTask);
-        
+
+        // Передаем выбранные инструменты в MainScene
+        if (temporarySelectedTools.Count > 0)
+        {
+            MainSceneScript.selectedTools["Hero"] = new List<string>(temporarySelectedTools);
+            Debug.Log("Выбранные инструменты переданы в MainScene.");
+        }
+
+        // Очистить инструменты перед переходом
+        ClearSelectedInstruments(); // Очистка инструментов
+
         SceneManager.LoadScene("MainScene");
     }
+
+
 }
